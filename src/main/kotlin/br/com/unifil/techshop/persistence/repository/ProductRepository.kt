@@ -9,7 +9,6 @@ class ProductRepository : ProductPort {
     private val storage: MutableMap<String, ProductEntity> = mutableMapOf()
 
     override fun createProduct(product: Product): Product {
-        throw IllegalArgumentException()
         val productToSave = ProductEntity.toEntity(product = product)
         if (productToSave.id !== null) {
             storage[productToSave.id] = productToSave
