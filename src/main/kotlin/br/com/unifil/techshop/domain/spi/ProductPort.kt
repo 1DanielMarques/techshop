@@ -8,4 +8,6 @@ interface ProductPort {
 
     fun findProducts(): List<Product>
 
+    fun deleteAll()
+
 }
