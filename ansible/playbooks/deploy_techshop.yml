@@ -1,18 +1,16 @@
 - name: Provisionar e configurar ambiente TechShop
-  hosts: localhost
+  hosts: all
   become: yes
   tasks:
     - name: Instalar o Java JDK 21
       apt:
         name: openjdk-21-jdk
         state: present
-      become: yes
 
     - name: Instalar Maven
       apt:
         name: maven
         state: present
-      become: yes
 
     - name: Clonar o repositório da aplicação
       git:
@@ -20,20 +18,26 @@
         dest: /opt/techshop
         version: master
 
+    - name: Configurar settings.xml
+      run: |
+        mkdir -p ~/.m2
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > ~/.m2/settings.xml
+        echo '<settings>' >> ~/.m2/settings.xml
+        echo '  <mirrors>' >> ~/.m2/settings.xml
+        echo '    <mirror>' >> ~/.m2/settings.xml
+        echo '      <id>central</id>' >> ~/.m2/settings.xml
+        echo '      <mirrorOf>central</mirrorOf>' >> ~/.m2/settings.xml
+        echo '      <url>https://repo.maven.apache.org/maven2</url>' >> ~/.m2/settings.xml
+        echo '    </mirror>' >> ~/.m2/settings.xml
+        echo '  </mirrors>' >> ~/.m2/settings.xml
+        echo '</settings>' >> ~/.m2/settings.xml
+
     - name: Construir a aplicação com Maven
-      command: mvn clean install
+      command: mvn clean install -X
       args:
         chdir: /opt/techshop
-      register: mvn_output
-      ignore_errors: yes
-
-    - name: Exibir log do Maven
-      debug:
-        msg: "{{ mvn_output.stdout }}"
-      when: mvn_output.rc != 0
 
     - name: Iniciar a aplicação
       command: java -jar /opt/techshop/target/techshop.jar
       args:
         chdir: /opt/techshop
-      when: mvn_output.rc == 0
