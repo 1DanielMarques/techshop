@@ -22,4 +22,8 @@ class ProductRepository : ProductPort {
         return storage.values.toList().map { it.toDomain() }
     }
 
+    override fun deleteAll() {
+        this.storage.clear()
+    }
+
 }
