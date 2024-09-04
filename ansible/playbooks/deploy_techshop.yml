@@ -16,7 +16,7 @@
       git:
         repo: 'https://github.com/1DanielMarques/techshop.git'
         dest: /opt/techshop
-        version: main
+        version: master
 
     - name: Construir a aplicação com Maven
       command: mvn clean install
