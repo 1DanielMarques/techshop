@@ -69,7 +69,13 @@
       debug:
         msg: "{{ maven_build.stdout }}"
 
+    - name: Verificar se o JAR foi criado
+      stat:
+        path: /opt/techshop/target/techshop.jar
+      register: jar_file
+
     - name: Iniciar a aplicação
       command: java -jar /opt/techshop/target/techshop.jar
       args:
         chdir: /opt/techshop
+      when: jar_file.stat.exists
