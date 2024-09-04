@@ -30,12 +30,44 @@
         echo '      <url>https://repo.maven.apache.org/maven2</url>' >> ~/.m2/settings.xml
         echo '    </mirror>' >> ~/.m2/settings.xml
         echo '  </mirrors>' >> ~/.m2/settings.xml
+        echo '  <profiles>' >> ~/.m2/settings.xml
+        echo '    <profile>' >> ~/.m2/settings.xml
+        echo '      <id>jdk-21</id>' >> ~/.m2/settings.xml
+        echo '      <properties>' >> ~/.m2/settings.xml
+        echo '        <maven.compiler.source>21</maven.compiler.source>' >> ~/.m2/settings.xml
+        echo '        <maven.compiler.target>21</maven.compiler.target>' >> ~/.m2/settings.xml
+        echo '      </properties>' >> ~/.m2/settings.xml
+        echo '    </profile>' >> ~/.m2/settings.xml
+        echo '  </profiles>' >> ~/.m2/settings.xml
+        echo '  <activeProfiles>' >> ~/.m2/settings.xml
+        echo '    <activeProfile>jdk-21</activeProfile>' >> ~/.m2/settings.xml
+        echo '  </activeProfiles>' >> ~/.m2/settings.xml
         echo '</settings>' >> ~/.m2/settings.xml
+
+    - name: Verificar a versão do Java
+      command: java -version
+      register: java_version
+
+    - name: Verificar a versão do Maven
+      command: mvn -version
+      register: maven_version
+
+    - name: Exibir versões
+      debug:
+        msg: |
+          Java Version: {{ java_version.stdout }}
+          Maven Version: {{ maven_version.stdout }}
 
     - name: Construir a aplicação com Maven
       command: mvn clean install -X
       args:
         chdir: /opt/techshop
+      register: maven_build
+      ignore_errors: yes
+
+    - name: Exibir log do Maven
+      debug:
+        msg: "{{ maven_build.stdout }}"
 
     - name: Iniciar a aplicação
       command: java -jar /opt/techshop/target/techshop.jar
