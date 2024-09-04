@@ -9,7 +9,6 @@ class CreateProductUseCase(
 ) : CreateProduct {
 
     override fun create(product: Product): Product {
-        throw IllegalArgumentException("error")
         return this.productPort.createProduct(product = product)
     }
 
