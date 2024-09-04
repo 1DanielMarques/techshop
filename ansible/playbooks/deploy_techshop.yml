@@ -1,6 +1,7 @@
 - name: Provisionar e configurar ambiente TechShop
   hosts: all
   become: yes
+
   tasks:
     - name: Instalar o Java JDK 21
       apt:
@@ -17,13 +18,22 @@
         repo: 'https://github.com/1DanielMarques/techshop.git'
         dest: /opt/techshop
         version: master
+        force: yes
 
     - name: Construir a aplicação com Maven
       command: mvn clean install
       args:
         chdir: /opt/techshop
+      register: mvn_output
+      ignore_errors: yes
+
+    - name: Exibir log do Maven
+      debug:
+        msg: "{{ mvn_output.stdout }}"
+      when: mvn_output.failed
 
     - name: Iniciar a aplicação
       command: java -jar /opt/techshop/target/techshop.jar
       args:
         chdir: /opt/techshop
+      when: mvn_output.rc == 0
