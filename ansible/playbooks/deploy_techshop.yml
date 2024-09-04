@@ -59,7 +59,7 @@
           Maven Version: {{ maven_version.stdout }}
 
     - name: Construir a aplicação com Maven
-      command: mvn clean install -X
+      command: mvn clean install
       args:
         chdir: /opt/techshop
       register: maven_build
