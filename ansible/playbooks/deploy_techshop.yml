@@ -19,7 +19,7 @@
         version: master
 
     - name: Configurar settings.xml
-      run: |
+      shell: |
         mkdir -p ~/.m2
         echo '<?xml version="1.0" encoding="UTF-8"?>' > ~/.m2/settings.xml
         echo '<settings>' >> ~/.m2/settings.xml
