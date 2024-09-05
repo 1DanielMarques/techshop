@@ -60,13 +60,19 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: techshop-image
-          path: ./techshop.tar
+          path: .
 
-      - name: List files for debug
-        run: ls -alh
+      - name: Ensure downloaded file is correct
+        run: |
+          echo "Listing contents of the current directory:"
+          ls -alh
+          echo "Verifying the downloaded file:"
+          file techshop.tar
+          echo "Checking if it is a regular file:"
+          if [ -f techshop.tar ]; then echo "File exists and is a regular file"; else echo "File does not exist or is not a regular file"; exit 1; fi
 
       - name: Load Docker image
-        run: docker load -i ./techshop.tar
+        run: docker load -i techshop.tar
 
       - name: Set up Ansible
         run: |
