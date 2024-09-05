@@ -9,6 +9,7 @@ class CreateProductUseCase(
 ) : CreateProduct {
 
     override fun create(product: Product): Product {
+        //cria produto
         return this.productPort.createProduct(product = product)
     }
 

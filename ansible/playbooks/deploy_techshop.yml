@@ -2,28 +2,50 @@
   hosts: all
   become: yes
   tasks:
-    - name: Instalar o Java JDK 21
+    - name: Atualizar a lista de pacotes
       apt:
-        name: openjdk-21-jdk
+        update_cache: yes
+
+    - name: Instalar dependências do Docker
+      apt:
+        name: ['apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
         state: present
 
-    - name: Instalar Maven
-      apt:
-        name: maven
+    - name: Adicionar chave GPG oficial do Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    - name: Clonar o repositório da aplicação
-      git:
-        repo: 'https://github.com/seu-usuario/techshop.git'
-        dest: /opt/techshop
-        version: main
+    - name: Adicionar repositório Docker
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
 
-    - name: Construir a aplicação com Maven
-      command: mvn clean install
-      args:
-        chdir: /opt/techshop
+    - name: Atualizar a lista de pacotes após adicionar repositório Docker
+      apt:
+        update_cache: yes
 
-    - name: Iniciar a aplicação
-      command: java -jar /opt/techshop/target/techshop.jar
-      args:
-        chdir: /opt/techshop
+    - name: Instalar Docker
+      apt:
+        name: docker-ce
+        state: present
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Load Docker image
+      command: docker load -i /home/runner/work/techshop/techshop/techshop.tar
+
+    - name: Run Docker container
+      docker_container:
+        name: techshop
+        image: techshop:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:8080"
+        volumes:
+          - /opt/techshop:/data
