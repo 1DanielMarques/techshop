@@ -41,11 +41,13 @@ jobs:
         run: docker build -t techshop:latest .
 
       - name: Save Docker image
+        run: docker save -o techshop.tar techshop:latest
+
+      - name: Upload Docker image
         uses: actions/upload-artifact@v2
         with:
           name: techshop-image
           path: techshop.tar
-        run: docker save -o techshop.tar techshop:latest
 
   deploy:
     runs-on: ubuntu-latest
