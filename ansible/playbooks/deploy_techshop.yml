@@ -2,9 +2,32 @@
   hosts: all
   become: yes
   tasks:
+    - name: Atualizar a lista de pacotes
+      apt:
+        update_cache: yes
+
+    - name: Instalar dependências do Docker
+      apt:
+        name: ['apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+        state: present
+
+    - name: Adicionar chave GPG oficial do Docker
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Adicionar repositório Docker
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Atualizar a lista de pacotes após adicionar repositório Docker
+      apt:
+        update_cache: yes
+
     - name: Instalar Docker
       apt:
-        name: docker.io
+        name: docker-ce
         state: present
 
     - name: Start Docker service
@@ -14,7 +37,7 @@
         enabled: yes
 
     - name: Load Docker image
-      command: docker load -i /path/to/techshop.tar
+      command: docker load -i /home/runner/work/techshop/techshop/techshop.tar
 
     - name: Run Docker container
       docker_container:
