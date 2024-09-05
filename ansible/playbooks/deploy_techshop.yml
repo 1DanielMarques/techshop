@@ -2,80 +2,27 @@
   hosts: all
   become: yes
   tasks:
-    - name: Instalar o Java JDK 21
+    - name: Instalar Docker
       apt:
-        name: openjdk-21-jdk
+        name: docker.io
         state: present
 
-    - name: Instalar Maven
-      apt:
-        name: maven
-        state: present
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
 
-    - name: Clonar o repositório da aplicação
-      git:
-        repo: 'https://github.com/1DanielMarques/techshop.git'
-        dest: /opt/techshop
-        version: master
+    - name: Load Docker image
+      command: docker load -i /path/to/techshop.tar
 
-    - name: Configurar settings.xml
-      shell: |
-        mkdir -p ~/.m2
-        echo '<?xml version="1.0" encoding="UTF-8"?>' > ~/.m2/settings.xml
-        echo '<settings>' >> ~/.m2/settings.xml
-        echo '  <mirrors>' >> ~/.m2/settings.xml
-        echo '    <mirror>' >> ~/.m2/settings.xml
-        echo '      <id>central</id>' >> ~/.m2/settings.xml
-        echo '      <mirrorOf>central</mirrorOf>' >> ~/.m2/settings.xml
-        echo '      <url>https://repo.maven.apache.org/maven2</url>' >> ~/.m2/settings.xml
-        echo '    </mirror>' >> ~/.m2/settings.xml
-        echo '  </mirrors>' >> ~/.m2/settings.xml
-        echo '  <profiles>' >> ~/.m2/settings.xml
-        echo '    <profile>' >> ~/.m2/settings.xml
-        echo '      <id>jdk-21</id>' >> ~/.m2/settings.xml
-        echo '      <properties>' >> ~/.m2/settings.xml
-        echo '        <maven.compiler.source>21</maven.compiler.source>' >> ~/.m2/settings.xml
-        echo '        <maven.compiler.target>21</maven.compiler.target>' >> ~/.m2/settings.xml
-        echo '      </properties>' >> ~/.m2/settings.xml
-        echo '    </profile>' >> ~/.m2/settings.xml
-        echo '  </profiles>' >> ~/.m2/settings.xml
-        echo '  <activeProfiles>' >> ~/.m2/settings.xml
-        echo '    <activeProfile>jdk-21</activeProfile>' >> ~/.m2/settings.xml
-        echo '  </activeProfiles>' >> ~/.m2/settings.xml
-        echo '</settings>' >> ~/.m2/settings.xml
-
-    - name: Verificar a versão do Java
-      command: java -version
-      register: java_version
-
-    - name: Verificar a versão do Maven
-      command: mvn -version
-      register: maven_version
-
-    - name: Exibir versões
-      debug:
-        msg: |
-          Java Version: {{ java_version.stdout }}
-          Maven Version: {{ maven_version.stdout }}
-
-    - name: Construir a aplicação com Maven
-      command: mvn clean install
-      args:
-        chdir: /opt/techshop
-      register: maven_build
-      ignore_errors: yes
-
-    - name: Exibir log do Maven
-      debug:
-        msg: "{{ maven_build.stdout }}"
-
-    - name: Verificar se o JAR foi criado
-      stat:
-        path: /opt/techshop/target/techshop.jar
-      register: jar_file
-
-    - name: Iniciar a aplicação
-      command: java -jar /opt/techshop/target/techshop.jar
-      args:
-        chdir: /opt/techshop
-      when: jar_file.stat.exists
+    - name: Run Docker container
+      docker_container:
+        name: techshop
+        image: techshop:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:8080"
+        volumes:
+          - /opt/techshop:/data
