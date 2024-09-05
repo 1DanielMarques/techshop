@@ -1,51 +1,84 @@
+# Nome do playbook
 - name: Provisionar e configurar ambiente TechShop
+  # Aplica o playbook a todos os hosts
   hosts: all
+  # Eleva privilégios para tarefas que necessitam de permissões de superusuário
   become: yes
   tasks:
+     # Nome da tarefa
     - name: Atualizar a lista de pacotes
       apt:
+        # Atualiza o cache dos pacotes disponíveis
         update_cache: yes
 
+      # Nome da tarefa
     - name: Instalar dependências do Docker
       apt:
+        # Pacotes necessários para instalar o Docker
         name: ['apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+        # Garante que os pacotes estejam instalados
         state: present
 
+    # Nome da tarefa
     - name: Adicionar chave GPG oficial do Docker
       apt_key:
+        # URL da chave GPG do Docker
         url: https://download.docker.com/linux/ubuntu/gpg
+        # Garante que a chave esteja presente
         state: present
 
+    # Nome da tarefa
     - name: Adicionar repositório Docker
       apt_repository:
+        # URL do repositório Docker
         repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        # Garante que o repositório esteja adicionado
         state: present
 
+    # Nome da tarefa
     - name: Atualizar a lista de pacotes após adicionar repositório Docker
       apt:
+        # Atualiza o cache dos pacotes após adicionar o repositório Docker
         update_cache: yes
 
+    # Nome da tarefa
     - name: Instalar Docker
       apt:
+        # Nome do pacote Docker
         name: docker-ce
+        # Garante que o Docker esteja instalado
         state: present
 
+    # Nome da tarefa
     - name: Start Docker service
       service:
+        # Nome do serviço Docker
         name: docker
+        # Garante que o serviço esteja iniciado
         state: started
+        # Garante que o serviço inicie automaticamente na inicialização
         enabled: yes
 
+    # Nome da tarefa
     - name: Load Docker image
-      command: docker load -i /home/runner/work/techshop/techshop/techshop.tar
+      command:
+        # Comando para carregar a imagem Docker
+        cmd: docker load -i /home/runner/work/techshop/techshop/techshop.tar
 
+    # Nome da tarefa
     - name: Run Docker container
       docker_container:
+        # Nome do contêiner
         name: techshop
+        # Imagem Docker a ser usada
         image: techshop:latest
+        # Garante que o contêiner esteja iniciado
         state: started
+        # Define a política de reinício para sempre
         restart_policy: always
         ports:
+          # Mapeia a porta 8080 do contêiner para a porta 8080 do host
           - "8080:8080"
         volumes:
+          # Mapeia o diretório do host para o contêiner
           - /opt/techshop:/data
